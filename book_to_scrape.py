@@ -1,3 +1,4 @@
+import time
 from bs4 import BeautifulSoup
 import requests
 import os
@@ -28,20 +29,23 @@ class BookToScrape:
         category_directory = utils.create_folder(build_folder_path, book_objs_lst[0].category)
         images_folder = utils.create_folder(category_directory, "images")
         self.create_books_csv_file(book_objs_lst, category_directory)          
-        for book_obj in book_objs_lst:    
-            img_data = requests.get(book_obj.image_url).content
-            image_path = os.path.join(images_folder, book_obj.title) + ".jpg"
-            with open(image_path, 'wb') as handler:
-                handler.write(img_data) 
-                print("L'image a été téléchargée avec succès.")
+        for book_obj in book_objs_lst:
+            print(book_obj.title)  
+            img_data = requests.get(book_obj.image_url)
+            if img_data.status_code == 200:
+                image_path = os.path.join(images_folder, book_obj.title) + ".jpg"
+                print(image_path)
+                with open(image_path, 'wb') as handler:
+                    handler.write(img_data.content) 
+                    print("L'image a été téléchargée avec succès.")
 
 
     def create_books_csv_file(self, lst, directory):
         csv_path = os.path.join(directory, "books") + ".csv"
-        with open(csv_path, 'w', newline='') as csvfile:
+        with open(csv_path, 'w', newline='', encoding='utf-8') as csvfile:
             writer = csv.writer(csvfile)
             for row in lst:
-                writer.writerow(vars(row).items())
+                writer.writerow(vars(row).values())
         csvfile.close()
 
 
@@ -51,7 +55,7 @@ class BookToScrape:
         for book_url in book_url_lst:
             book_data = self.get_book_data(book_url, base_url, category_url_dict["category"])
             book_obj = self.transform_data(book_data)
-        book_obj_lst.append(book_obj)
+            book_obj_lst.append(book_obj)
         return book_obj_lst
 
     
@@ -62,7 +66,7 @@ class BookToScrape:
         for elem in elems:
             ul_tag = elem.find("ul")
             a_links = ul_tag.find_all('a')
-            for a_link in a_links[:2]:
+            for a_link in a_links:
                 link = a_link.get("href")
                 new_url = utils.create_url(base_url, link)
                 category = a_link.get_text()
@@ -130,7 +134,7 @@ class BookToScrape:
         soup = self.parse_page(url)
 
         books_elems = soup.find_all("h3")
-        for book_elem in books_elems[:1]:
+        for book_elem in books_elems:
             book_link = book_elem.find("a").get("href")
             absolute_link = utils.create_absolute_link(url, book_link)
             book_link_lst.append(absolute_link)
@@ -151,7 +155,7 @@ class BookToScrape:
             try:
                 response = requests.get(url)
                 if response.ok:
-                    soup = BeautifulSoup(response.text, "lxml")
+                    soup = BeautifulSoup(response.text, "html.parser")
                     return soup
             except requests.ConnectTimeout:
                 print("La connexion a l'adresse : ", url, " à expiré. Essai ", index + 1)
