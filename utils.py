@@ -24,6 +24,12 @@ def formate_book_data(book_dict):
         book_dict[key] = value.encode('Latin-1').decode('utf-8', 'ignore')
         if key == "category":
             book_dict[key] = value.strip()
+        if key == "title":
+            illegal_chars = r',<>:"/\|?*'
+            for char in illegal_chars:
+                filename = book_dict[key].replace(char, '')
+                new_filename = ' '.join(filename.split()[:20])
+                book_dict[key] = new_filename
     return book_dict
 
 
