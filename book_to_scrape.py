@@ -15,6 +15,7 @@ class BookToScrape:
         base_url = "http://books.toscrape.com/"
         category_url_dict_lst = self.get_category_links(base_url)
         for category_url_dict in category_url_dict_lst:
+            print("CURRENT PARSED CATEGORY: ", category_url_dict["category"])
             book_objs_lst = self.get_category_book_objs(category_url_dict, base_url)
             self.load_data_to_csv_and_download_images(book_objs_lst, build_folder_path)
     
@@ -30,20 +31,21 @@ class BookToScrape:
         images_folder = utils.create_folder(category_directory, "images")
         self.create_books_csv_file(book_objs_lst, category_directory)          
         for book_obj in book_objs_lst:
-            print(book_obj.title)  
             img_data = requests.get(book_obj.image_url)
             if img_data.status_code == 200:
-                image_path = os.path.join(images_folder, book_obj.title) + ".jpg"
-                print(image_path)
+                filename = utils.create_image_name(book_obj.title)
+                image_path = os.path.join(images_folder, filename) + ".jpg"
                 with open(image_path, 'wb') as handler:
                     handler.write(img_data.content) 
                     print("L'image a été téléchargée avec succès.")
 
 
     def create_books_csv_file(self, lst, directory):
+        header_dict = {"image_url": "image url", "product_page_url": "product page url", "category": "category", "title": "title", "review_rating": "review rating", "product_description": "product description", "universal_product_code": "universal product code", "price_excl_tax": "price excl tax", "price_incl_tax": "price incl tax", "availability": "availability"}
         csv_path = os.path.join(directory, "books") + ".csv"
         with open(csv_path, 'w', newline='', encoding='utf-8') as csvfile:
-            writer = csv.writer(csvfile)
+            writer = csv.writer(csvfile, delimiter=';')
+            self.add_headers(header_dict, writer)
             for row in lst:
                 writer.writerow(vars(row).values())
         csvfile.close()
@@ -78,11 +80,13 @@ class BookToScrape:
     def get_book_data(self, book_url, base_url, category):
         book_data_dict={}
         soup = self.parse_page(book_url)
+        book_data_dict["product_page_url"] = book_url
         try:
                 book_data_dict["title"] = soup.find("h1").text
+                print("CURRENT PARSED BOOK TITLE: ", book_data_dict["title"])
         except AttributeError:
-            book_data_dict["title"] = "Non renseigné"
-
+                book_data_dict["title"] = "Non renseigné"
+                print("CURRENT PARSED BOOK TITLE: ", book_data_dict["title"])
         try:
             book_data_dict["product_description"] = soup.find(id="product_description").find_next_sibling('p').text
         except AttributeError:
@@ -138,14 +142,12 @@ class BookToScrape:
             book_link = book_elem.find("a").get("href")
             absolute_link = utils.create_absolute_link(url, book_link)
             book_link_lst.append(absolute_link)
-            # print("URL BOOK: ", absolute_link)
 
         next_page_link = self.check_next_page(soup)
         if next_page_link:
             next_page_url = utils.modify_url(url, next_page_link)  
             book_link_lst += self.parse_books_url_per_page(next_page_url)
 
-        # print("BOOK LIST: ", book_link_lst)
         return book_link_lst
 
                             
@@ -165,3 +167,7 @@ class BookToScrape:
         if soup.find(class_ = "next"):
             next_page_link = soup.find(class_ = "next").find("a").get("href")
             return next_page_link
+
+
+    def add_headers(self, headers, writer):
+        writer.writerow(headers.values())
