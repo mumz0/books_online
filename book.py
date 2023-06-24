@@ -29,7 +29,7 @@ class Book :
     def create_book_obj(dict):
         book_obj = Book(
             _image_url = dict["image_url"],
-            _product_page_url = dict["product_description"], 
+            _product_page_url = dict["product_page_url"], 
             _category = dict["category"], 
             _title = dict["title"], 
             _review_rating = dict["review_rating"], 

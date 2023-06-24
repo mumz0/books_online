@@ -27,9 +27,8 @@ def formate_book_data(book_dict):
         if key == "title":
             illegal_chars = r',<>:"/\|?*'
             for char in illegal_chars:
-                filename = book_dict[key].replace(char, '')
-                new_filename = ' '.join(filename.split()[:20])
-                book_dict[key] = new_filename
+                title = book_dict[key].replace(char, '')
+                book_dict[key] = title
     return book_dict
 
 
@@ -53,3 +52,7 @@ def create_folder(path, folder_name):
     else:
         print("Le dossier ", folder_name, " existe déjà.")
     return new_directory
+
+
+def create_image_name(title):
+    return ' '.join(title.split()[:20]).replace(' ', '_')
