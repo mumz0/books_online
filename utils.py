@@ -19,16 +19,11 @@ def modify_url(url, path_to_add):
     return new_url
 
 
-def formate_book_data(book_dict):
+def format_book_data(book_dict):
     for key, value in book_dict.items():
         book_dict[key] = value.encode('Latin-1').decode('utf-8', 'ignore')
         if key == "category":
             book_dict[key] = value.strip()
-        if key == "title":
-            illegal_chars = r',<>:"/\|?*'
-            for char in illegal_chars:
-                title = book_dict[key].replace(char, '')
-                book_dict[key] = title
     return book_dict
 
 
@@ -54,5 +49,7 @@ def create_folder(path, folder_name):
     return new_directory
 
 
-def create_image_name(title):
-    return ' '.join(title.split()[:20]).replace(' ', '_')
+def create_folder_to_store_data():
+    path = os.path.abspath(os.path.join(os.getcwd(), "_build"))
+    build_folder_path = create_folder_with_date_time(path)
+    return build_folder_path
