@@ -20,16 +20,16 @@ class Book :
         self.title = _title
         self.review_rating = _review_rating
         self.product_description = _product_description
-        self.universal_product_code = _universal_product_code, 
+        self.universal_product_code = _universal_product_code 
         self.price_excl_tax = _price_excl_tax
         self.price_incl_tax = _price_incl_tax
         self.availability = _availability
-    
+
 
     def create_book_obj(dict):
         book_obj = Book(
             _image_url = dict["image_url"],
-            _product_page_url = dict["product_page_url"], 
+            _product_page_url = dict["product_page_url"],
             _category = dict["category"], 
             _title = dict["title"], 
             _review_rating = dict["review_rating"], 
